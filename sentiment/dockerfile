@@ -1,0 +1,16 @@
+FROM pytorch/pytorch:1.3-cuda10.1-cudnn7-runtime
+
+RUN useradd --shell /bin/bash user --create-home -d /home/user/
+WORKDIR /home/user/
+
+RUN pip install --no-cache-dir redis==3.3.11 transformers==2.3.0
+
+COPY --chown=user:user models/trained_model .
+COPY --chown=user:user main.py model.py ./
+
+RUN chown -R user:user /home/user
+USER user
+
+CMD [ "python", "main.py", "--checkpoint", "trained_model", "--maxlen", "230"]
+
+
