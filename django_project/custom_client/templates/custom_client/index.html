@@ -1,0 +1,377 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'custom_client/css/custom_client.css' %}">
+
+
+    <title>home</title>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{% static 'custom_client/js/wordcloud.js' %}"></script>
+    <script type="text/javascript" charset="utf-8">
+        var words_list =
+            [
+                {% for word, count in frequent_words %}
+                    ['{{word}}', {{count}}],
+                {% endfor %}
+            ];
+
+        var options =
+            {
+                gridSize: 16,
+                weightFactor: function (size) {
+                    return size;//(Math.pow(size, 2.3) * 800) / 1024;
+                },
+                fontFamily: 'Times, serif',
+                color: function (word, weight) {
+                    return (weight === 12) ? '#f02222' : '#c09292';
+                },
+                color: "#1fa9ff",
+
+                minSize: 1,
+                drawOutOfBound: false,
+                shrinkToFit: true,
+                rotateRatio: 0.,
+                rotationSteps: 0,
+                list: words_list
+            };
+
+        function resize_canvas() {
+            canvas = document.getElementById("canvas");
+            canvas.width = Math.round(window.innerWidth * 0.40);
+            canvas.height = Math.round(window.innerHeight * 0.25);
+            WordCloud('canvas', options)
+        }
+    </script>
+
+</head>
+<body onresize="resize_canvas();" onload="resize_canvas();">
+
+<!-- Tab panes -->
+
+
+<ul class="container-fluid mt-5" style="width:80%">
+
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="bg-white p-5 rounded shadow">
+
+                <form action="{% url 'index' %}" method="post" class="form-inline">
+                    {% csrf_token %}
+                    <div class="input-group border rounded-pill p-1">
+
+                        <input type="text" placeholder="Keywords" aria-describedby="button-addon4"
+                               class="form-control bg-none border-0" name="keywords" value="{{keywords_value}}">
+                        <div class="input-group-append border-0">
+                            <button id="button-addon4" type="button submit" class="btn btn-link text-info"><i
+                                    class="fa fa-search"></i></button>
+                        </div>
+
+                    </div>
+
+                    <div class="input-group border rounded-pill p-1 ml-2">
+                        <input type="text" placeholder="Location" aria-describedby="button-addon4" name="location"
+                               class="form-control bg-none border-0" value="{{location_value}}">
+                    </div>
+
+                    <select id="search_type" name="search_type" class="form-control ml-4">
+                        {% if searched_company %}
+                        <option value="company">Company</option>
+                        <option value="job">Job Offer</option>
+                        {% else %}
+                        <option value="job">Job Offer</option>
+                        <option value="company">Company</option>
+                        {% endif %}
+                    </select>
+
+                    <div class="custom-control custom-checkbox mt-3" style="padding-left:442px">
+                        <input name="start_crawl" id="start_crawl_0" type="checkbox"
+                               class="custom-control-input" value="true"
+                               {% if crawl_value %}
+                               checked="{{crawl_value}}"
+                               {% endif %}
+                               >
+                        <label for="start_crawl_0" class="custom-control-label">Start background crawl</label>
+                    </div>
+
+
+                </form>
+                <!-- End -->
+
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-3">
+            <div class="container-fluid align-center">
+                <canvas id="canvas" tag="canvas">
+                </canvas>
+            </div>
+        </div>
+
+    </div>
+
+    {% if jobs|length == 0 and companies|length == 0 %}
+    <div class="row">
+        <div class="col-lg-12 mt-5" align="center">
+            <div class="container-fluid">
+                <h1>No results to show.</h1>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if jobs|length > 0 %}
+        <div class="row mt-1">
+            <div class="col-lg-12 mt-5 mr-2">
+                <table id="jobs_table" class="table table-striped table-bordered text-center table-hover">
+                    <thead>
+                    <tr>
+                        <th class="align-middle">Job Title</th>
+                        <th class="align-middle">Employer</th>
+                        <th class="align-middle">Lang</th>
+                        <th class="align-middle">City</th>
+                        <th class="align-middle">State</th>
+                        <th class="align-middle">Country</th>
+                        <th class="align-middle">Rating</th>
+                        <th class="align-middle">Culture</th>
+                        <th class="align-middle">Career</th>
+                        <th class="align-middle">W/L Balance</th>
+                        <th class="align-middle">Modified</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for job in jobs %}
+                    <tr>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 300px;max-width: 300px;">
+                            <a href="{% url 'job_details' job.id %}">{{ job.job_title | safe}}</a>
+                        </td>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 250px;max-width: 250px;">
+                            <a href="{% url 'company_details' job.employer_glassdoor_id %}">{{ job.employer_name | safe}}</a>
+                        </td>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 30px;max-width: 30px;">
+                            {{job.description_language}}
+                        </td>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 50px;max-width: 50px;">
+                            {{job.city | safe}}
+                        </td>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 50px;max-width: 50px;">
+                            {{job.state | safe}}
+                        </td>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 50px;max-width: 50px;">
+                            {{job.country | safe}}
+                        </td>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 30px;max-width: 30px;">
+                            {{job.emp_overall_rating}}
+                            {% if job.emp_overall_rating_difference is not None %}
+                            <span
+                                    {% if job.emp_overall_rating_difference >= 0 %}
+                                    style="color:green">
+                                (+{% elif job.emp_overall_rating_difference < 0 %}
+                                    style="color:red">
+                                ({% endif %}{{job.emp_overall_rating_difference}})
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 30px;max-width: 30px;">
+                            {{job.emp_culture_and_values}}
+                            {% if job.emp_culture_and_values_difference is not None %}
+                            <span
+                                    {% if job.emp_culture_and_values_difference >= 0 %}
+                                    style="color:green">
+                                (+{% elif job.emp_culture_and_values_difference < 0 %}
+                                    style="color:red">
+                                ({% endif %}{{job.emp_culture_and_values_difference}})
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 30px;max-width: 30px;">
+                            {{job.emp_career_opportunities}}
+                            {% if job.emp_career_opportunities_difference is not None %}
+                            <span
+                                    {% if job.emp_career_opportunities_difference >= 0 %}
+                                    style="color:green">
+                                (+{% elif job.emp_career_opportunities_difference < 0 %}
+                                    style="color:red">
+                                ({% endif %}{{job.emp_career_opportunities_difference}})
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle" style="word-wrap: break-word;min-width: 30px;max-width: 30px;">
+                            {{job.emp_work_life_balance}}
+                            {% if job.emp_work_life_balance_difference is not None %}
+                            <span
+                                    {% if job.emp_work_life_balance_difference >= 0 %}
+                                    style="color:green">
+                                (+{% elif job.emp_work_life_balance_difference < 0 %}
+                                    style="color:red">
+                                ({% endif %}{{job.emp_work_life_balance_difference}})
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            {{job.date_last_modify}}
+                        </td>
+
+
+                    </tr>
+                    {% endfor %}
+
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <th class="align-middle">Job Title</th>
+                        <th class="align-middle">Employer</th>
+                        <th class="align-middle">Lang</th>
+                        <th class="align-middle">City</th>
+                        <th class="align-middle">State</th>
+                        <th class="align-middle">Country</th>
+                        <th class="align-middle">Rating</th>
+                        <th class="align-middle">Culture</th>
+                        <th class="align-middle">Career</th>
+                        <th class="align-middle">W/L Balance</th>
+                        <th class="align-middle">Modified</th>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if companies|length > 0 %}
+    <div class="row mt-1">
+        <div class="col-lg-12 mt-5 mr-2">
+            <table id="companies_table" class="table table-striped table-bordered text-center table-hover">
+                <thead>
+                <tr>
+                    <th class="align-middle">Company Name</th>
+                    <th class="align-middle">Website</th>
+                    <th class="align-middle">Headquarters</th>
+                    <th class="align-middle">Industry</th>
+                    <th class="align-middle">Rating</th>
+                    <th class="align-middle">Culture</th>
+                    <th class="align-middle">Career</th>
+                    <th class="align-middle">W/L Balance</th>
+                    <th class="align-middle">Modified</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for company in companies %}
+                <tr>
+                    <td class="align-middle" style="word-wrap: break-word;min-width: 300px;max-width: 300px;">
+                        <a href="{% url 'company_details' company.glassdoor_id %}">{{ company.name | safe }}</a>
+                    </td>
+                    <td class="align-middle" style="word-wrap: break-word;min-width: 300px;max-width: 300px;">
+                        <a href="{{company.website | safe}}">Website</a>
+                    </td>
+                    <td class="align-middle" style="word-wrap: break-word;min-width: 30px;max-width: 30px;">
+                        {{company.headquarters | safe}}
+                    </td>
+                    <td class="align-middle" style="word-wrap: break-word;min-width: 50px;max-width: 50px;">
+                        {{company.industry | safe}}
+                    </td>
+                    <td class="align-middle" style="word-wrap: break-word;min-width: 50px;max-width: 50px;">
+                        {{company.overall_rating}}
+                        {% if company.overall_rating_difference is not None %}
+                        <span
+                                {% if company.overall_rating_difference >= 0 %}
+                                    style="color:green">
+                                (+{% elif company.overall_rating_difference < 0 %}
+                                    style="color:red">
+                                ({% endif %}{{company.overall_rating_difference}})
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle" style="word-wrap: break-word;min-width: 50px;max-width: 50px;">
+                        {{company.culture_and_values}}
+                        {% if company.culture_and_values_difference is not None %}
+                        <span
+                                {% if company.culture_and_values_difference >= 0 %}
+                                    style="color:green">
+                                (+{% elif company.culture_and_values_difference < 0 %}
+                                    style="color:red">
+                                ({% endif %}{{company.culture_and_values_difference}})
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle" style="word-wrap: break-word;min-width: 30px;max-width: 30px;">
+                        {{company.career_opportunities}}
+                        {% if company.career_opportunities_difference is not None %}
+                        <span
+                                {% if company.career_opportunities_difference >= 0 %}
+                                    style="color:green">
+                                (+{% elif company.career_opportunities_difference < 0 %}
+                                    style="color:red">
+                                ({% endif %}{{company.career_opportunities_difference}})
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle" style="word-wrap: break-word;min-width: 30px;max-width: 30px;">
+                        {{company.work_life_balance}}
+                        {% if company.work_life_balance_difference is not None %}
+                        <span
+                                {% if company.work_life_balance_difference >= 0 %}
+                                    style="color:green">
+                                (+{% elif company.work_life_balance_difference < 0 %}
+                                    style="color:red">
+                                ({% endif %}{{company.work_life_balance_difference}})
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="align-middle">
+                        {{company.date_last_modify}}
+                    </td>
+
+
+                </tr>
+                {% endfor %}
+
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th class="align-middle">Company Name</th>
+                    <th class="align-middle">Website</th>
+                    <th class="align-middle">Headquarters</th>
+                    <th class="align-middle">Industry</th>
+                    <th class="align-middle">Rating</th>
+                    <th class="align-middle">Culture</th>
+                    <th class="align-middle">Career</th>
+                    <th class="align-middle">W/L Balance</th>
+                    <th class="align-middle">Modified</th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</ul>
+
+
+<script type="text/javascript" class="init">
+    $(document).ready(function () {
+        $('#jobs_table').DataTable();
+    });
+    $(document).ready(function () {
+        $('#companies_table').DataTable();
+    });
+
+</script>
+</body>
+</html>

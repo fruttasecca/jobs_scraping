@@ -1,0 +1,38 @@
+th {
+    color: #1fa9ff;
+    font-size: 20px;
+}
+
+
+
+
+a {
+    color: #1372ad
+}
+
+h1 {
+    color: #1fa9ff;
+    font-size: 60px;
+}
+
+a.nav-link {
+    font-weight: 900;
+    color: #1fa9ff;
+    font-size: 40px;
+}
+
+/*
+from https://bootstrapious.com/p/bootstrap-search-bar
+ */
+
+.form-control:focus {
+    box-shadow: none;
+}
+
+.form-control-underlined {
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-radius: 0;
+    padding-left: 0;
+}
+

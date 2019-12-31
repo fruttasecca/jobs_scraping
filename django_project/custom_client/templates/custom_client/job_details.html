@@ -1,0 +1,186 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+
+    <title>{{job.job_title | safe}} by {{job.employer_name | safe}}</title>
+</head>
+<body>
+
+<!-- Tab panes -->
+
+
+<ul class="container-fluid" style="width:80%">
+
+    <div class="row">
+        <div class="col-lg-12 mx-auto">
+            <h2 style="float:left">{{job.job_title | safe}}</h2>
+            <h3 class="mt-3">
+                &nbsp;&nbsp;by <a href="{% url 'company_details' job.employer_glassdoor_id %}">{{ job.employer_name }}</a>
+            </h3>
+        </div>
+    </div>
+    {% comment %}
+    <div class="row">
+        <div class="col-lg-12 mx-auto">
+
+
+            {% if company %}
+                {% if company.overall_rating or company.culture_and_values or company.career_opportunities or company.work_life_balance or company.senior_management or company.ceo_rating or company.biz_outlook or company.recommend or company.comp_and_benefits %}
+            <div class="container">
+                    Company Ratings
+
+                    {% if company.overall_rating %}
+                        <div class="progress position-relative" style="height:30px">
+                            <div class="progress-bar progress-bar"
+                                 style="width:{% widthratio company.overall_rating 1 20 %}%;height:30px; background-color:#6670FF;color:black"></div>
+                            <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Overall Rating</small>
+                        </div><br>
+
+
+                    {% endif %}
+
+                {% if company.culture_and_values %}
+                <div class="progress position-relative" style="height:30px">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.culture_and_values 1 20 %}%;height:30px; background-color:#FB8D68;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Culture and Values</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.career_opportunities %}
+                <div class="progress position-relative" style="height:30px">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.career_opportunities 1 20 %}%;height:30px; background-color:#1372ad;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Career Opportunities</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.work_life_balance %}
+                <div class="progress position-relative" style="height:30px">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.work_life_balance 1 20 %}%;height:30px; background-color:#A7AFFB;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Work/Life Balance</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.senior_management %}
+                <div class="progress position-relative" style="height:30px">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.senior_management 1 20 %}%;height:30px; background-color:#b76fed;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Senior Management</small>
+
+                </div><br>
+
+                {% if company.comp_and_benefits %}
+                <div class="progress position-relative" style="height:30px">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.comp_and_benefits 1 20 %}%;height:30px; background-color:#99c7a6;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Comp and Benefits</small>
+                </div><br>
+
+
+
+                {% endif %}
+
+
+                {% endif %}
+
+                {% if company.recommend %}
+                <div class="progress position-relative" style="height:30px">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.recommend 1 100 %}%;height:30px; background-color:#cc4961;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Recommended by others</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.ceo_rating %}
+                <div class="progress position-relative" style="height:30px">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.ceo_rating 1 100 %}%;height:30px; background-color:#dfe835;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Ceo Rating</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.biz_outlook %}
+                <div class="progress position-relative" style="height:30px">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.biz_outlook 1 100 %}%;height:30px; background-color:#45ad80;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Business Outlook</small>
+                </div><br>
+
+
+                {% endif %}
+            </div>
+                {% endif %}
+            {% endif %}
+
+            <h3>
+            {% if job.city or job.country or job.state  %}
+            Location:
+            {% endif %}
+            {% if job.city%}
+            {{job.city | safe}}
+            {% endif %}
+
+            {% if job.state %}
+            {% if job.city %}
+            |
+            {% endif %}
+            {{job.state | safe}},
+            {% endif %}
+
+            {% if job.country %}
+            {% if job.city or job.state %}
+            |
+            {% endif %}
+            {{job.country | safe}}
+            {% endif %}
+            </h3>
+
+
+            <hr style="height:4px;border:none;color:#333;background-color:#333;" />
+
+        </div>
+    </div>
+    {% endcomment %}
+    <h3>
+        {% if job.embedding %}
+        <form action="{% url 'index'%}" method="post" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="job_id" value="{{job.id}}">
+            <input type="submit"
+                   value="Search similar job offers via embedding (experimental)"
+                   style="background-color:#1fa9ff;border:0px">
+        </form>
+        {% endif %}
+    </h3>
+    <div class="row">
+        <div class="col-lg-12 mx-auto">
+        {{job.description_html | safe}}
+        </div>
+    </div>
+
+</ul>
+
+</body>
+</html>

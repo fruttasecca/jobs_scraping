@@ -1,0 +1,427 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="{% static 'custom_client/css/custom_client.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <title>{{company.name}}</title>
+    <script type="text/javascript" src="{% static 'custom_client/js/wordcloud.js' %}"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script type="text/javascript" language="javascript"
+            src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" language="javascript"
+            src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8">
+        var words_list =
+            [
+                {% for word, count in frequent_words %}
+                ['{{word}}', {{count}}],
+                {% endfor %}
+            ];
+
+        var options =
+            {
+                gridSize: 16,
+                weightFactor: function (size) {
+                    return size;//(Math.pow(size, 2.3) * 800) / 1024;
+                },
+                fontFamily: 'Times, serif',
+                color: function (word, weight) {
+                    return (weight === 12) ? '#f02222' : '#c09292';
+                },
+                color: "#1fa9ff",
+
+                minSize: 1,
+                drawOutOfBound: false,
+                shrinkToFit: true,
+                rotateRatio: 0.,
+                rotationSteps: 0,
+                list: words_list
+            };
+
+        function resize_canvas() {
+            canvas = document.getElementById("canvas");
+            canvas.width = Math.round(window.innerWidth * 0.35);
+            canvas.height = Math.round(window.innerHeight * 0.55);
+            WordCloud('canvas', options)
+        }
+    </script>
+</head>
+<body onresize="resize_canvas();" onload="resize_canvas();">
+
+<!-- Tab panes -->
+
+
+<ul class="container-fluid" style="width:80%">
+
+    <div class="row">
+        <div class="col-lg-12 mx-auto">
+            <h2 style="float:left">{{company.name | safe}}</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 mt-4">
+            <h4><b>Company Info</b></h4>
+
+            {% if company.website %}
+            <h5>
+                <b>Website:</b> {{company.website | safe}}
+            </h5>
+            {% endif %}
+
+            {% if company.headquarters %}
+            <h5>
+                <b>Headquarters:</b> {{company.headquarters | safe}}
+            </h5>
+            {% endif %}
+
+            {% if company.size %}
+            <h5>
+                <b>Size:</b> {{company.size | safe}}
+            </h5>
+            {% endif %}
+
+            {% if company.founded %}
+            <h5>
+                <b>Founded:</b> {{company.founded | safe}}
+            </h5>
+            {% endif %}
+
+            {% if company.industry %}
+            <h5>
+                <b>Industry:</b> {{company.industry | safe}}
+            </h5>
+            {% endif %}
+
+            {% if company.revenue %}
+            <h5>
+                <b>Revenue:</b> {{company.revenue}}
+            </h5>
+            {% endif %}
+
+            {% if company.competitors %}
+            <h5>
+                <b>Competitors:</b> {{company.competitors | safe}}
+            </h5>
+            {% endif %}
+
+            {% if reviews %}
+            <h5>
+               <b>Reviews:</b> {{ reviews | length}}
+            </h5>
+            {% endif %}
+
+            {% if reviews_sentiment_score %}
+            <h5>
+                <b>Reviews sentiment score:</b> {{ reviews_sentiment_score}}
+            </h5>
+            {% endif %}
+
+            {% if reviews_tags %}
+            <h5>
+                <b>Common Tags:</b>
+                {% for tag, count in reviews_tags %}
+                {{tag}} ({{count}})
+                {% endfor%}
+            </h5>
+            {% endif %}
+
+            <div class="container-fluid align-center">
+                <canvas id="canvas" tag="canvas">
+                </canvas>
+            </div>
+
+        </div>
+        <div class="col-lg-6">
+            {% if company %}
+                {% if company.overall_rating or company.culture_and_values or company.career_opportunities or company.work_life_balance or company.senior_management or company.ceo_rating or company.biz_outlook or company.recommend or company.comp_and_benefits %}
+            <br class="container">
+                <h4><b>Company Ratings</b></h4>
+
+                    {% if company.overall_rating %}
+                        <div class="progress position-relative" style="height:30px;border-radius: 0px;">
+                            <div class="progress-bar progress-bar"
+                                 style="width:{% widthratio company.overall_rating 1 20 %}%;height:30px; background-color:#6670FF;color:black"></div>
+                            <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Overall Rating</small>
+                        </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio all_companies_avgs.overall_rating 1 20 %}%;height:15px; background-color:#6670FF;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio same_industry_companies_avgs.overall_rating 1 20 %}%;height:15px; background-color:#6670FF;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">Industry Average</small>
+                </div><br>
+
+
+                    {% endif %}
+
+                {% if company.culture_and_values %}
+                <div class="progress position-relative" style="height:30px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.culture_and_values 1 20 %}%;height:30px; background-color:#FB8D68;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Culture and Values</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio all_companies_avgs.culture_and_values 1 20 %}%;height:15px; background-color:#FB8D68;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio same_industry_companies_avgs.culture_and_values 1 20 %}%;height:15px; background-color:#FB8D68;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">Industry Average</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.career_opportunities %}
+                <div class="progress position-relative" style="height:30px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.career_opportunities 1 20 %}%;height:30px; background-color:#1372ad;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Career Opportunities</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio all_companies_avgs.career_opportunities 1 20 %}%;height:15px; background-color:#1372ad;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio same_industry_companies_avgs.career_opportunities 1 20 %}%;height:15px; background-color:#1372ad;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">Industry Average</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.work_life_balance %}
+                <div class="progress position-relative" style="height:30px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.work_life_balance 1 20 %}%;height:30px; background-color:#A7AFFB;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Work/Life Balance</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio all_companies_avgs.work_life_balance 1 20 %}%;height:15px; background-color:#A7AFFB;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio same_industry_companies_avgs.work_life_balance 1 20 %}%;height:15px; background-color:#A7AFFB;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">Industry Average</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.senior_management %}
+                <div class="progress position-relative" style="height:30px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.senior_management 1 20 %}%;height:30px; background-color:#b76fed;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Senior Management</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio all_companies_avgs.senior_management 1 20 %}%;height:15px; background-color:#b76fed;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio same_industry_companies_avgs.senior_management 1 20 %}%;height:15px; background-color:#b76fed;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div><br>
+                {% endif %}
+
+                {% if company.comp_and_benefits %}
+                <div class="progress position-relative" style="height:30px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.comp_and_benefits 1 20 %}%;height:30px; background-color:#99c7a6;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Comp and Benefits</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio all_companies_avgs.comp_and_benefits 1 20 %}%;height:15px; background-color:#99c7a6;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio same_industry_companies_avgs.comp_and_benefits 1 20 %}%;height:15px; background-color:#99c7a6;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">Industry Average</small>
+                </div></br>
+                {% endif %}
+
+
+
+                {% if company.recommend %}
+                <div class="progress position-relative" style="height:30px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.recommend 1 100 %}%;height:30px; background-color:#cc4961;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Recommended by others</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio all_companies_avgs.recommend 1 100 %}%;height:15px; background-color:#cc4961;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio same_industry_companies_avgs.recommend 1 100 %}%;height:15px; background-color:#cc4961;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">Industry Average</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.ceo_rating %}
+                <div class="progress position-relative" style="height:30px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.ceo_rating 1 100 %}%;height:30px; background-color:#dfe835;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Ceo Rating</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio all_companies_avgs.ceo_rating 1 100 %}%;height:15px; background-color:#dfe835;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio same_industry_companies_avgs.ceo_rating 1 100 %}%;height:15px; background-color:#dfe835;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">Industry Average</small>
+                </div><br>
+
+
+                {% endif %}
+
+                {% if company.biz_outlook %}
+                <div class="progress position-relative" style="height:30px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio company.biz_outlook 1 100 %}%;height:30px; background-color:#45ad80;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:20px;font-weight:700">Business Outlook</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio all_companies_avgs.biz_outlook 1 100 %}%;height:15px; background-color:#45ad80;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">All Companies Average</small>
+                </div>
+                <div class="progress position-relative" style="height:15px;border-radius:0px;">
+                    <div class="progress-bar progress-bar"
+                         style="width:{% widthratio same_industry_companies_avgs.biz_outlook 1 100 %}%;height:15px; background-color:#45ad80;color:black"></div>
+                    <small class="justify-content-center d-flex position-absolute w-100" style="font-size:10px;font-weight:700">Industry Average</small>
+                </div><br>
+
+
+                {% endif %}
+            </div>
+                {% endif %}
+            {% endif %}
+
+            <h3>
+            {% if job.city or job.country or job.state  %}
+            Location:
+            {% endif %}
+            {% if job.city %}
+            {{job.city | safe}}
+            {% endif %}
+
+            {% if job.state %}
+            {% if job.city %}
+            |
+            {% endif %}
+            {{job.state | safe}},
+            {% endif %}
+
+            {% if job.country %}
+            {% if job.city or job.state %}
+            |
+            {% endif %}
+            {{job.country | safe}}
+            {% endif %}
+            </h3>
+
+
+        </div>
+    </div>
+    <hr style="height:4px;border:none;color:#333;background-color:#333;" />
+    {% if jobs|length > 0%}
+    <div class="row">
+        <H3>Job offers from {{company.name}}</H3>
+        <div class="col-lg-12 mx-auto">
+            <ul class="list-inline border" style="background-color: #9effc8">
+                <h4>
+
+                {% for job in jobs %}
+                <li class="list-inline-item">
+                    <a href="{% url 'job_details' job.id %}">{{ job.job_title | safe}}</a>
+                </li>
+                {% endfor %}
+
+                </h4>
+</ul>
+        </div>
+    </div>
+    {% endif %}
+    {% if reviews|length > 0%}
+    <div class="row">
+        <H3>Reviews about {{company.name}}</H3>
+        <div class="col-lg-12 mx-auto">
+
+            {% for review in reviews %}
+            <div class="border mt-2" style="background-color: whitesmoke">
+                <div class="text-wrap" style="width: 80rem;">
+                {% if review.sentiment_score %}
+                <h5>Sentiment score: {{review.sentiment_score}}</h5>
+                {% endif %}
+                {% if review.title %}
+                <h4>Title</h4>
+                {{review.title | safe}}
+                {% endif %}
+                {% if review.pros %}
+                <h4>Pros</h4>
+                {{review.pros | safe}}
+                {% endif %}
+                {% if review.cons %}
+                <h4>Cons</h4>
+                {{review.cons | safe}}
+                {% endif %}
+                {% if review.advice_to_management %}
+                <h4>Advice to Management</h4>
+                {{review.advice_to_management | safe}}
+                {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+    {% endif %}
+
+</ul>
+<script type="text/javascript" class="init">
+    $(document).ready(function () {
+        $('#frequent_words').DataTable({searching: false, paging: false, info: false});
+    });
+</script>
+</body>
+</html>
