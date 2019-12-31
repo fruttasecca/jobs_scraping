@@ -1,0 +1,164 @@
+version: '3'
+services:
+
+  mongodb:
+    container_name: mongodb
+    hostname: mongodb
+    image: mongo:3.0
+    expose:
+      - "27017"
+    networks:
+      - bridge
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+    deploy:
+      replicas: 1
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:6.0-rc1
+    expose:
+      - "6379"
+    networks:
+      - bridge
+      - crawler_net
+      - compute_net
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: always
+    deploy:
+      replicas: 1
+
+  text_embedding:
+    container_name: text_embedding
+    hostname: text_embedding
+    build:
+      context: ../Cr5
+      dockerfile: dockerfile
+    image: text_embedding_cr5
+    command: python -u main.py
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JOB_EMBEDDING_INPUT_QUEUE=job_embedding_input_queue
+      - JOB_EMBEDDING_OUTPUT_QUEUE=job_embedding_output_queue
+    networks:
+      - compute_net
+    depends_on:
+      - redis
+    restart: always
+    deploy:
+      replicas: 1
+
+  crawler:
+    container_name: crawler
+    hostname: crawler
+    build:
+      context: ../crawling
+      dockerfile: dockerfile
+    image: crawler
+    command: python -u main.py
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CRAWLER_JOB_INPUT_QUEUE=crawler_job_input_queue
+      - CRAWLER_COMPANY_INPUT_QUEUE=crawler_company_input_queue
+      - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
+    networks:
+      - crawler_net
+    depends_on:
+      - redis
+    restart: always
+    deploy:
+      replicas: 4
+
+  broker:
+    container_name: broker
+    hostname: broker
+    build:
+      context: ../broker
+      dockerfile: dockerfile
+    image: broker
+    command: python -u main.py
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_NAME=mydb
+      - CRAWLER_JOB_INPUT_QUEUE=crawler_job_input_queue
+      - CRAWLER_COMPANY_INPUT_QUEUE=crawler_company_input_queue
+      - CRAWLER_OUTPUT_QUEUE=crawler_output_queue
+      - SENTIMENT_ANALYSIS_INPUT_QUEUE=sentiment_analysis_input_queue
+      - SENTIMENT_ANALYSIS_OUTPUT_QUEUE=sentiment_analysis_output_queue
+      - JOB_EMBEDDING_INPUT_QUEUE=job_embedding_input_queue
+      - JOB_EMBEDDING_OUTPUT_QUEUE=job_embedding_output_queue
+    networks:
+      - bridge
+    depends_on:
+      - redis
+      - mongodb
+    restart: always
+    deploy:
+      replicas: 1
+
+  client:
+    container_name: client
+    hostname: client
+    build:
+      context: ../django_project
+      dockerfile: dockerfile
+    image: client
+    ports:
+    - 8000:8000
+    command: python -u manage.py runserver 0.0.0.0:8000
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGODB_HOST=mongodb
+      - MONGODB_PORT=27017
+      - MONGODB_NAME=mydb
+      - CRAWLER_JOB_INPUT_QUEUE=crawler_job_input_queue
+      - CRAWLER_COMPANY_INPUT_QUEUE=crawler_company_input_queue
+    networks:
+      - bridge
+    depends_on:
+      - redis
+      - mongodb
+    restart: always
+    deploy:
+      replicas: 1
+
+  sentiment_analysis:
+    container_name: sentiment_analysis
+    hostname: sentiment_analysis
+    build:
+      context: ../sentiment
+      dockerfile: dockerfile
+    image: sentiment_analysis
+    command: python -u main.py --checkpoint trained_model --maxlen 230
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SENTIMENT_ANALYSIS_INPUT_QUEUE=sentiment_analysis_input_queue
+      - SENTIMENT_ANALYSIS_OUTPUT_QUEUE=sentiment_analysis_output_queue
+    networks:
+      - compute_net
+    depends_on:
+      - redis
+    restart: always
+    deploy:
+      replicas: 1
+
+networks:
+  bridge:
+  crawler_net:
+  compute_net:
+
+volumes:
+  redis-data:
+  mongo-data:
+
