@@ -1,0 +1,14 @@
+FROM python:3-buster
+
+RUN useradd --shell /bin/bash user --create-home -d /home/user/
+WORKDIR /home/user/
+
+COPY . .
+RUN pip install --no-cache-dir redis==3.3.11 scrapy==1.8.0
+WORKDIR crawling/
+
+RUN chown -R user:user /home/user
+USER user
+
+CMD [ "python", "main.py" ]
+
