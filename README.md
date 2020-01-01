@@ -12,7 +12,7 @@ review related to a company, while a document embedding model (``josifoski-wsdm2
 each job offer into a numerical array that allows to search for similar jobs by sorting 
 on the cosine similarity. 
 
-![Alt text](images/index.png?raw=true "A look at the index of the client")  
+### Views
 
  When searching for jobs or companies we might be returned some data. Both jobs and companies
  are compared through some metrics with other results in the search, to allow for more 
@@ -21,21 +21,27 @@ on the cosine similarity.
  their name we will be brought to a detailed page for a job offer or a company.  
  When searching for job offers a word cloud of said offers is provided to give a general idea 
  about buzzwords and the like.
- 
- ![Alt text](images/job_details.png?raw=true "A look at a job offer page")  
+
+![Alt text](images/index.png?raw=true "A look at the index of the client")  
+---
  
   A job offer page, simply put, contains the job description as it was scraped. 
   Some more details, such as location, employer, etc. might be present, depending on their availability.
- 
- ![Alt text](images/company_details.png?raw=true "A look at a company page")  
- 
+  
+ ![Alt text](images/job_details.png?raw=true "A look at a job offer page")  
+---
+
  A company page offers a general outlook about the company, its job offers and the reviews it has received.  
  Each company might be characterized by more or less data, depending on what is present in the db.  
  Among general info such as headquarters, revenue, competitors etc., one interesting feature 
  is the ability to visualize, for some selected metrics (such as work life balance, 
  career opportunities, benefits, etc.), a comparison between this company, the 
  mean of all companies belonging to the same industry, and the mean of all companies in the db.
-_____
+ 
+ ![Alt text](images/company_details.png?raw=true "A look at a company page")  
+ ---
+ 
+### Usage & Extension
 The **project is easily extensible** and further models can be plugged in to 
 obtain different estimations, metrics, classifications etc. The same can be said for 
 the crawling side, scrapy spiders can be written for different websites and plugged into the 
