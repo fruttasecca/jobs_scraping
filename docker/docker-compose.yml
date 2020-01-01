@@ -33,7 +33,6 @@ services:
       replicas: 1
 
   text_embedding:
-    container_name: text_embedding
     hostname: text_embedding
     build:
       context: ../Cr5
@@ -54,7 +53,6 @@ services:
       replicas: 1
 
   crawler:
-    container_name: crawler
     hostname: crawler
     build:
       context: ../crawling
@@ -76,7 +74,6 @@ services:
       replicas: 4
 
   broker:
-    container_name: broker
     hostname: broker
     build:
       context: ../broker
@@ -106,7 +103,6 @@ services:
       replicas: 1
 
   client:
-    container_name: client
     hostname: client
     build:
       context: ../django_project
@@ -133,7 +129,6 @@ services:
       replicas: 1
 
   sentiment_analysis:
-    container_name: sentiment_analysis
     hostname: sentiment_analysis
     build:
       context: ../sentiment
