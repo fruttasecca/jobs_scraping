@@ -5,8 +5,8 @@ WORKDIR /home/user/
 
 RUN pip install --no-cache-dir redis==3.3.11 transformers==2.3.0
 
-COPY --chown=user:user models/trained_model .
-COPY --chown=user:user main.py model.py ./
+COPY models/trained_model .
+COPY main.py model.py ./
 
 RUN chown -R user:user /home/user
 USER user
