@@ -30,23 +30,6 @@ if __name__ == "__main__":
     connect(os.environ["MONGODB_NAME"], host=os.environ["MONGODB_HOST"], port=int(os.environ["MONGODB_PORT"]))
     print("connection to mongodb created")
 
-    print("sizes")
-    print(len(Job.objects()))
-    print(len(Company.objects()))
-    print(len(Review.objects()))
-    Job.drop_collection()
-    Company.drop_collection()
-    Review.drop_collection()
-    # for r in Review.objects():
-    #     print(r.to_json())
-    # for j in Job.objects():
-    #     print(j.to_json())
-    # for c in Company.objects():
-    #     print(c.to_json())
-    # s = Job()
-    # print("memes" in s)
-    #
-
     # set up redis queues to wait on for tasks
     redis_queues = []
     for name in ["JOB_EMBEDDING_OUTPUT_QUEUE", "CRAWLER_OUTPUT_QUEUE",
