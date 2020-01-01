@@ -325,7 +325,8 @@ def render_jobs(request, context, jobs):
 
         # add company(ies) info
         if "employer_glassdoor_id" in job:
-            company = list(filter(lambda x: x["glassdoor_id"] == job["employer_glassdoor_id"], jobs_companies))
+            company = list(filter(lambda x: "glassdoor_id" in x and x["glassdoor_id"] == job["employer_glassdoor_id"],
+                                  jobs_companies))
             if company:
                 company = company[0]
             for field in __search_employer_fields:
