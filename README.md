@@ -20,7 +20,15 @@ on the cosine similarity.
  some metrics, such as work life balance, career opportunities, etc. By clicking on 
  their name we will be brought to a detailed page for a job offer or a company.  
  When searching for job offers a word cloud of said offers is provided to give a general idea 
- about buzzwords and the like.
+ about buzzwords and the like.  
+ The search bar allows you to also start a crawl for a given job/company at a given location, after
+ eventually starting in the background (given the current task and input queues of the crawler) relatd
+ data will begin to populate the database.  
+ Note that when searching in the db, specifying the location will require (a case insensitive) match
+ with a city, state or country. These fields might often not be there but present in the job
+ description text (even if said data was found through a crawl with a given 
+ specific location), so it might better to add the location to the searched keywords instead
+ of specifying it in the location form input.
 
 ![Alt text](images/index.png?raw=true "A look at the index of the client")  
 ---
